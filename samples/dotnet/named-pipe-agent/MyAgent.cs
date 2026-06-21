@@ -1,14 +1,14 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Agents.Builder;
 using Microsoft.Agents.Builder.App;
 using Microsoft.Agents.Builder.State;
 using Microsoft.Agents.Core.Models;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 
-namespace Otel;
+namespace NamedPipeAgent;
 
 public class MyAgent : AgentApplication
 {
@@ -24,13 +24,16 @@ public class MyAgent : AgentApplication
         {
             if (member.Id != turnContext.Activity.Recipient.Id)
             {
-                await turnContext.SendActivityAsync(MessageFactory.Text("Hello and Welcome!"), cancellationToken);
+                await turnContext.SendActivityAsync(MessageFactory.Text("Hello and Welcome! I am a named-pipe agent."), cancellationToken);
             }
         }
     }
 
     private async Task OnMessageAsync(ITurnContext turnContext, ITurnState turnState, CancellationToken cancellationToken)
     {
-        await turnContext.SendActivityAsync($"You said: {turnContext.Activity.Text}", cancellationToken: cancellationToken);
+        int count = turnState.Conversation.GetValue("conversation.counter", () => 0) + 1;
+        turnState.Conversation.SetValue("conversation.counter", count);
+
+        await turnContext.SendActivityAsync($"[{count}] You said: {turnContext.Activity.Text}", cancellationToken: cancellationToken);
     }
 }
